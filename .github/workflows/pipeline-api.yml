@@ -1,4 +1,4 @@
-name: Relatorio de testes API Captacao
+name: Relatorio de testes API
 
 on:  
   push:
