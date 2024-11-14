@@ -159,21 +159,13 @@ jobs:
           name: allure-report-functional
           path: allure-reports/functional
 
-      - name: Download Allure reports from Regression
-        if: ${{ needs.test-Contrato.outputs.contract_status == 'true' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report-regression
-          path: allure-reports/regression
-
       - name: Copy Allure Reports to allure-results
         run: |
           mkdir -p allure-results
           if [ -d "allure-reports/health-check" ]; then cp -r allure-reports/health-check/* allure-results; fi
           if [ -d "allure-reports/contract" ]; then cp -r allure-reports/contract/* allure-results; fi
           if [ -d "allure-reports/functional" ]; then cp -r allure-reports/functional/* allure-results; fi
-          if [ -d "allure-reports/regression" ]; then cp -r allure-reports/regression/* allure-results; fi
-
+          
       - name: Load test report history
         uses: actions/checkout@v4
         if: always()
