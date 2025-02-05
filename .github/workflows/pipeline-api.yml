@@ -87,19 +87,19 @@ jobs:
       - name: Download Allure Report Health-Check
         uses: actions/download-artifact@v4
         with:
-          name: allure-report-health-check
+          name: allure-results-health-check
           path: allure-reports/health-check
 
       - name: Download Allure Report Contract
         uses: actions/download-artifact@v4
         with:
-          name: allure-report-contract
+          name: allure-results-contract
           path: allure-reports/contract
 
       - name: Download Allure Report Functional
         uses: actions/download-artifact@v4
         with:
-          name: allure-report-functional
+          name: allure-results-functional
           path: allure-reports/functional
 
       - name: Copy Allure Reports to allure-results
