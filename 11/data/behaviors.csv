@@ -1,0 +1,6 @@
+"Epic","Feature","Story","FAILED","BROKEN","PASSED","SKIPPED","UNKNOWN"
+"Login","","Como usuário do sistema, desejo logar no sistema para conseguir minhas autenticações e permissões no sistema","2","0","2","0","0"
+"Products","","Como usuário do sistema, desejo enviar uma requisição para visualizar os produtos cadastrados no banco de daods","1","2","6","0","0"
+"User","","Como usuário do sistema, desejo enviar uma requisição para listar os usuários e consultar informações pertinentes","1","0","1","0","0"
+"Health Check","","Como usuário do sistema, desejo enviar uma requisição no endpoint de health check para verificar se o sistema está online e operante","0","0","2","0","0"
+"Products","","Como usuário do sistema, desejo enviar produtos no sistema para cadastrar no banco de dados","0","0","2","0","0"
