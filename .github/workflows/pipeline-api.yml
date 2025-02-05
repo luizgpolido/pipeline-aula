@@ -1,159 +1,106 @@
-name: Relatorio de testes API
+name: RestAssured com Allure Report
 
-on:  
+on:
   push:
-    branches:
-      - main
-      
+    branches: [ "main", "github-actions-api-pipeline" ]
+  pull_request:
+    branches: [ "main" ]
+
+  #Para rodar a pipeline de forma manual!
+  workflow_dispatch:
+
 env:
-  ALLURE_RESULTS: allure-results
-  REPORT_URL: ${{ secrets.REPORT_URL }}
-  TAG_HEALTH_CHECK: "Health-Check"
-  TAG_CONTRATO: "Contract"
-  TAG_FUNCIONAL: "Functional"
-  TAG_REGRESSION: "Regression"
+  ALLURE_RESULTS_FOLDER: allure-results
+
 
 jobs:
-  build:
+  health-check:
     runs-on: ubuntu-latest
-    outputs:
-      cache_key: ${{ steps.cache.outputs.cache_key }}
+
     steps:
-      - name: Checkout code
+      - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Cache Maven
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven
+      - name: Rodar Teste de Contrato
+        run: mvn clean test -Dgroups="Health-Check" -Dallure.results.directory=target/allure-results/health-check
 
-  test-HealthCheck:
-    needs: build
-    runs-on: ubuntu-latest
-    outputs:
-      health_status: ${{ steps.set_output.outputs.status }}
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Run Health-Check Tests
-        id: health_check
-        run: mvn test -Dgroups=${{ env.TAG_HEALTH_CHECK }} -Dallure.results.directory=${{ env.ALLURE_RESULTS }}
-        continue-on-error: true
-        
-      - name: Set output based on results
-        id: set_output
-        run: |
-          if [ "${{ steps.health_check.outcome }}" == "success" ]; then
-            echo "status=true" >> $GITHUB_OUTPUT
-          else
-            echo "status=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Upload Allure reports
+      - name: Upload Artefatos do Allure Report
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-health-check
-          path: ${{ env.ALLURE_RESULTS }}
+          name: allure-results-health-check
+          path: ${{ ALLURE_RESULTS_FOLDER }}
 
-  test-Contrato:
-    needs: test-HealthCheck
-    if: ${{ needs.test-HealthCheck.outputs.health_status == 'true' }} 
+
+  contract-test:
+    needs: health-check
     runs-on: ubuntu-latest
-    outputs:
-      contract_status: ${{ steps.set_output.outputs.status }}
-    
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Run Contract Tests
-        id: contract_check
-        run: mvn test -Dgroups=${{ env.TAG_CONTRATO }} -Dallure.results.directory=${{ env.ALLURE_RESULTS }}
-        continue-on-error: true
+      - name: Rodar Teste de Contrato
+        run: mvn clean test -Dgroups="Contract" -Dallure.results.directory=target/allure-results/contract
 
-      - name: Set output based on results
-        id: set_output
-        run: |
-          if [ "${{ steps.contract_check.outcome }}" == "success" ]; then
-            echo "status=true" >> $GITHUB_OUTPUT
-          else
-            echo "status=false" >> $GITHUB_OUTPUT
-          fi
-          
-      - name: Upload Allure results
+      - name: Upload Artefatos do Allure Report
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-contract
-          path: ${{ env.ALLURE_RESULTS }}
+          name: allure-results-contract
+          path: ${{ ALLURE_RESULTS_FOLDER }}
 
-  test-Funcional:
-    needs: test-Contrato
-    if: ${{ needs.test-Contrato.outputs.contract_status == 'true' }} 
+  functional-test:
+    needs: health-check
     runs-on: ubuntu-latest
-    continue-on-error: true
+
     steps:
-      - uses: actions/checkout@v4        
-      - name: Set up JDK 17
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Run Functional Tests
-        run: mvn test -Dgroups=${{ env.TAG_FUNCIONAL }} -Dallure.results.directory=${{ env.ALLURE_RESULTS }}
-        continue-on-error: true
-        
-      - name: Upload Allure results
+      - name: Rodar Teste de Contrato
+        run: mvn clean test -Dgroups="Functional" -Dallure.results.directory=target/allure-results/functional
+
+      - name: Upload Artefatos do Allure Report
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-functional
-          path: ${{ env.ALLURE_RESULTS }}
+          name: allure-results-functional
+          path: ${{ ALLURE_RESULTS_FOLDER }}
 
   report:
     runs-on: ubuntu-latest
-    needs: [test-HealthCheck, test-Contrato, test-Funcional]
-    if: always() 
-    steps:
+    needs: [health-check, contract-test, functional-test]
 
-      - name: Download Allure reports from Health-Check
+    steps:
+      - name: Download Allure Report Health-Check
         uses: actions/download-artifact@v4
         with:
           name: allure-report-health-check
           path: allure-reports/health-check
 
-      - name: Download Allure reports from Contract
-        if: ${{ needs.test-HealthCheck.outputs.health_status == 'true' }}
+      - name: Download Allure Report Contract
         uses: actions/download-artifact@v4
         with:
           name: allure-report-contract
           path: allure-reports/contract
 
-      - name: Download Allure reports from Functional
-        if: ${{ needs.test-Contrato.outputs.contract_status == 'true' }}
+      - name: Download Allure Report Functional
         uses: actions/download-artifact@v4
         with:
           name: allure-report-functional
@@ -165,33 +112,31 @@ jobs:
           if [ -d "allure-reports/health-check" ]; then cp -r allure-reports/health-check/* allure-results; fi
           if [ -d "allure-reports/contract" ]; then cp -r allure-reports/contract/* allure-results; fi
           if [ -d "allure-reports/functional" ]; then cp -r allure-reports/functional/* allure-results; fi
+          if [ -d "allure-reports/regression" ]; then cp -r allure-reports/regression/* allure-results; fi
           
-      - name: Load test report history
+
+      - name: Download Histórico de Testes
         uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
-          ref: gh-pages
-          path: gh-pages
+          ref: api-pipeline-report
+          path: allure-history
 
-      - name: Build test report
+
+      - name: Build Test Report
         uses: simple-elf/allure-report-action@v1.7
         if: always()
         with:
-          gh_pages: gh-pages
+          api-pipeline-report: api-pipeline-report
           allure_history: allure-history
           allure_results: allure-results
 
-      - name: Edit index.html to include GitHub Run ID
-        run: |
-          echo "<!DOCTYPE html><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"0; URL=${{secrets.REPORT_URL}}/${GITHUB_RUN_NUMBER}/index.html\">" | sudo tee allure-history/index.html > /dev/null
-          echo "<meta http-equiv=\"Pragma\" content=\"no-cache\"><meta http-equiv=\"Expires\" content=\"0\">" | sudo tee -a allure-history/index.html > /dev/null
-        if: always()
 
-      - name: Publish test report
+      - name: Publicar Report na Branch API-PIPELINE-REPORT
         uses: peaceiris/actions-gh-pages@v4
         if: always()
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
+          #github_token: ${{ secrets.GITHUB_TOKEN }} # Preciso do PAT
+          publish_branch: api-pipeline-report
           publish_dir: allure-history
