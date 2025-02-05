@@ -9,10 +9,6 @@ on:
   #Para rodar a pipeline de forma manual!
   workflow_dispatch:
 
-env:
-  ALLURE_RESULTS_FOLDER: allure-results
-
-
 jobs:
   health-check:
     runs-on: ubuntu-latest
@@ -34,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-health-check
-          path: ${{ ALLURE_RESULTS_FOLDER }}
+          path: allure-results
 
 
   contract-test:
@@ -58,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-contract
-          path: ${{ ALLURE_RESULTS_FOLDER }}
+          path: allure-results
 
   functional-test:
     needs: health-check
@@ -81,7 +77,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-functional
-          path: ${{ ALLURE_RESULTS_FOLDER }}
+          path: allure-results
 
   report:
     runs-on: ubuntu-latest
