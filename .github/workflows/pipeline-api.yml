@@ -24,7 +24,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Rodar Teste de Contrato
-        run: mvn clean test -Dgroups="Health-Check" -Dallure.results.directory=target/allure-results/health-check
+        run: mvn clean test -Dgroups="Health-Check" -Dallure.results.directory=allure-results
 
       - name: Upload Artefatos do Allure Report
         uses: actions/upload-artifact@v4
@@ -48,7 +48,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Rodar Teste de Contrato
-        run: mvn clean test -Dgroups="Contract" -Dallure.results.directory=target/allure-results/contract
+        run: mvn clean test -Dgroups="Contract" -Dallure.results.directory=allure-results
 
       - name: Upload Artefatos do Allure Report
         uses: actions/upload-artifact@v4
@@ -71,7 +71,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Rodar Teste de Contrato
-        run: mvn clean test -Dgroups="Functional" -Dallure.results.directory=target/allure-results/functional
+        run: mvn clean test -Dgroups="Functional" -Dallure.results.directory=allure-results
 
       - name: Upload Artefatos do Allure Report
         uses: actions/upload-artifact@v4
