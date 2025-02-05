@@ -8,6 +8,11 @@ on:
 
   #Para rodar a pipeline de forma manual!
   workflow_dispatch:
+    inputs:
+        environment:
+          description: 'Branch para rodar os testes'
+          type: environment
+          required: true
 
 jobs:
   health-check:
